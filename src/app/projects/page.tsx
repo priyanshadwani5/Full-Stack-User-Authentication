@@ -175,7 +175,14 @@ export default function ProjectsDashboard() {
                   initializedAuth
                 );
                 setUserId(anonUserCredential.user.uid);
-                setUserName(anonUserCredential.user.displayName || null);
+                if (!anonUserCredential.user.displayName) {
+                  await updateProfile(anonUserCredential.user, {
+                    displayName: "Employee",
+                  });
+                  setUserName("Employee");
+                } else {
+                  setUserName(anonUserCredential.user.displayName);
+                }
               }
             } catch (authError: any) {
               console.error("Firebase Auth error:", authError);
@@ -589,26 +596,12 @@ export default function ProjectsDashboard() {
         dueDate.getMonth() === selectedDate.getMonth() &&
         dueDate.getFullYear() === selectedDate.getFullYear());
 
-    // Role-based filtering:
-    // Manager sees all projects.
-    // Employee sees only projects assigned to them (where assignedTo matches their userName).
-    const matchesRole =
-      userRole === "manager" ||
-      (userRole === "employee" &&
-        userName &&
-        project.assignedTo.toLowerCase() === userName.toLowerCase());
-
-    // Log for debugging
-    console.log(
-      `Project: ${project.name}, AssignedTo: ${project.assignedTo}, UserName: ${userName}, UserRole: ${userRole}, MatchesRole: ${matchesRole}`
-    );
-
+    // Remove role-based filtering: show all projects to both roles
     return (
       matchesSearch &&
       matchesStatus &&
       matchesPastProjectFilter &&
-      matchesDate &&
-      matchesRole
+      matchesDate
     );
   });
 
